@@ -36,34 +36,54 @@ public class Room {
         return this.score;
     }
 
-    public void toHTML(PrintWriter out) {
-        out.println( "<html>");
-        out.println( "<body>");
+    public void toHTML(Inventory inventory, PrintWriter out) {
+        out.println("<html>");
+        out.println("<body>");
 
         for (Row row : this.rows) {
-            out.println( "<div style='clear: both'>");
+            out.println("<div style='clear: both'>");
             for (Tile tile : row.getTiles()) {
-                out.println("<div style='width: " + (2*tile.getLength()) + "pt; height: 36pt; border: 1px solid #ccc; display: inline; float: left'>");
-                out.println( tile.getLength() );
+                int color = (int) ((tile.getLength() / 36.0) * 255.0);
+                String hex = Integer.toHexString(color);
+                out.println("<div style='background-color: #" + hex + hex + hex + "; width: " + (2 * tile.getLength()) + "pt; height: 36pt; border: 1px solid #ccc; display: inline; float: left'>");
+                out.println(tile.getLength());
                 out.println("</div>");
             }
-            out.println( "</div>");
+            out.println("</div>");
         }
 
         out.println("<pre style='clear: both'>");
+        out.println("Cut List");
         Map<Integer, List<Tile>> tiles = this.rows.stream().flatMap(e -> e.getTiles().stream()).collect(Collectors.groupingBy((Tile e) -> e.getLength()));
 
         List<Integer> lengths = new ArrayList<>();
-        lengths.addAll( tiles.keySet() );
+        lengths.addAll(tiles.keySet());
         lengths.sort(Comparator.comparingInt(l -> l));
 
-        for (Integer integer : lengths ){
+        for (Integer integer : lengths) {
             out.println(tiles.get(integer).size() + " @ " + integer + "\"\n");
         }
         out.println("</pre>");
 
-        out.println( "</body>");
-        out.println( "</html>");
+        out.println("<pre>");
+        out.println("Stock Used");
+
+        List<Tile> stockUsed = inventory.getStockUsed();
+        Map<Integer, List<Tile>> stock = stockUsed.stream().collect(Collectors.groupingBy(e -> e.getOriginalLength()));
+        ArrayList<Integer> sorted = new ArrayList<>();
+        sorted.addAll(stock.keySet());
+        sorted.sort(Comparator.comparingInt(l -> l));
+
+        for (Integer integer : sorted) {
+            out.println(integer + " @ " + stock.get(integer).size());
+
+        }
+
+        out.println("</pre>");
+
+
+        out.println("</body>");
+        out.println("</html>");
     }
 
     private void calculateScore() {
@@ -123,16 +143,15 @@ public class Room {
         Map<Integer, List<Tile>> tiles = this.rows.stream().flatMap(e -> e.getTiles().stream()).collect(Collectors.groupingBy((Tile e) -> e.getLength()));
 
         List<Integer> lengths = new ArrayList<>();
-        lengths.addAll( tiles.keySet() );
-        lengths.sort( (l,r)-> Integer.compare(l, r));
+        lengths.addAll(tiles.keySet());
+        lengths.sort((l, r) -> Integer.compare(l, r));
 
-        for (Integer integer : lengths ){
+        for (Integer integer : lengths) {
             buffer.append(tiles.get(integer).size() + " @ " + integer + "\"\n");
         }
 
         return buffer.toString();
     }
-
 
 
     private List<Row> rows = new ArrayList<>();

@@ -6,6 +6,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 public class Solver {
@@ -19,12 +20,12 @@ public class Solver {
     }
     
     public List<Room> solve(int iterations) {
-        long now = System.currentTimeMillis();
+        String now = new Date().toString();
         List<Room> solutions = new ArrayList<>();
         for ( int i = 0 ; i < iterations ; ++i ) {
-            //if ( i % 10000 == 0 ) {
-                //System.err.println( i );
-            //}
+            if ( i % 10000 == 0 ) {
+                System.err.println( i );
+            }
             Inventory myInventory = new Inventory(this.inventory);
             RoomGenerator roomGenerator = new RoomGenerator(myInventory, numRows, targetLength, minLength);
             Room room = roomGenerator.generate();
@@ -36,7 +37,7 @@ public class Solver {
                 if ( room.score() > 0 ) {
                     solutions.add(room);
                     try (PrintWriter out = new PrintWriter(new FileOutputStream(new File("solutions", now + "-" + i + ".html")))) {
-                        room.toHTML(out);
+                        room.toHTML(myInventory, out);
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
